@@ -11,14 +11,12 @@ async function apiRequest(endpoint, options = {}) {
     credentials: 'include'
   });
 
-  const data = await response.json().catch(() => ({ error: 'Request failed' }));
-
   if (!response.ok) {
-    const errorMsg = data.error?.message || data.error || 'Request failed';
-    throw new Error(errorMsg);
+    const error = await response.json().catch(() => ({ error: 'Request failed' }));
+    throw new Error(error.error || 'Request failed');
   }
 
-  return data;
+  return response.json();
 }
 
 export const api = {
@@ -27,7 +25,6 @@ export const api = {
 
   // User profile
   getUserProfile: (id) => apiRequest(`/user/${id}`),
-  getUserById: (id) => apiRequest(`/users/${id}`),
 
   // Registration
   checkRegister: (uid) => apiRequest(`/register/check?uid=${encodeURIComponent(uid || '')}`),

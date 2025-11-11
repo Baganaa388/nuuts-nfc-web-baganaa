@@ -3,7 +3,6 @@
 const {
   getLeaderboardRows,
   getUserFullById,
-  getUserByIdWithTotal,
   getTotalByUserId,
   createUserWithUid,
   getUserByUID
@@ -62,34 +61,18 @@ function checkRegister(req, res) {
 // POST /api/register
 function postRegister(req, res) {
   const uid = (req.body.uid || "").toString().trim();
-  const fullName = (req.body.fullName || "").toString().trim();
+  const name = (req.body.name || "").toString().trim();
   const nickname = (req.body.nickname || "").toString().trim();
   const profession = (req.body.profession || "").toString().trim();
-  const phone = (req.body.phone || "").toString().trim();
-  const gmail = (req.body.gmail || "").toString().trim();
-  const bio = (req.body.bio || "").toString().trim();
-  const avatarUrl = (req.body.avatarUrl || "").toString().trim();
-  const socials = req.body.socials || {};
 
-  if (!fullName) {
-    return res.status(400).json({ error: "Бүтэн нэр шаардлагатай." });
+  if (!name) {
+    return res.status(400).json({ error: "Нэр шаардлагатай." });
   }
-
-  if (!gmail) {
-    return res.status(400).json({ error: "Имэйл шаардлагатай." });
-  }
-
-  const socialsJson = Object.keys(socials).length > 0 ? JSON.stringify(socials) : null;
 
   const result = createUserWithUid({
-    name: fullName,
-    nickname: nickname || null,
-    profession: profession || null,
-    phone: phone || null,
-    gmail: gmail || null,
-    bio: bio || null,
-    avatarUrl: avatarUrl || null,
-    socials: socialsJson,
+    name,
+    nickname,
+    profession,
     uid: uid || null
   });
 
@@ -114,25 +97,9 @@ function getResolveUID(req, res) {
   return res.json({ exists: false, redirect: `/register?uid=${encodeURIComponent(raw)}` });
 }
 
-// GET /api/users/:id
-function getUserById(req, res) {
-  const id = parseInt(req.params.id, 10);
-  if (!id) {
-    return res.status(400).json({ ok: false, error: { message: "Invalid user ID" } });
-  }
-
-  const user = getUserByIdWithTotal(id);
-  if (!user) {
-    return res.status(404).json({ ok: false, error: { message: "User not found" } });
-  }
-
-  res.json({ ok: true, data: user });
-}
-
 module.exports = {
   getLeaderboard,
   getUserProfile,
-  getUserById,
   checkRegister,
   postRegister,
   getResolveUID
