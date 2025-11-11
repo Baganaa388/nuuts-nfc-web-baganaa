@@ -86,7 +86,7 @@ function getUserByUID(uid) {
 function getUserFullById(id) {
   return db
     .prepare(
-      "SELECT id, name, nickname, profession, uid, phone, bio, gender FROM users WHERE id = ?"
+      "SELECT id, name, nickname, profession, uid, phone, bio, gender, created_ts FROM users WHERE id = ?"
     )
     .get(id);
 }

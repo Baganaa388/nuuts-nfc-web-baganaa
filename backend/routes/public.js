@@ -39,6 +39,7 @@ function getUserProfile(req, res) {
     phone: user.phone || null,
     bio: user.bio || null,
     gender: user.gender || "other",
+    created_ts: user.created_ts || null,
     label,
     total,
   });
