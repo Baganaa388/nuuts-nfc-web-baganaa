@@ -6,6 +6,7 @@ const {
   getTotalByUserId,
   createUserWithUid,
   getUserByUID,
+  updateUser,
 } = require("../db");
 
 // GET /api/leaderboard
@@ -119,10 +120,65 @@ function getResolveUID(req, res) {
   });
 }
 
+// PUT /api/users/:id
+function putUserProfile(req, res) {
+  const id = parseInt(req.params.id, 10);
+  if (!id) {
+    return res.status(400).json({ ok: false, error: { message: "Invalid user ID" } });
+  }
+
+  // Extract only editable fields from request body
+  const { name, nickname, profession, phone, bio, gender } = req.body;
+
+  if (!name || typeof name !== "string" || name.trim() === "") {
+    return res.status(400).json({ ok: false, error: { message: "Name is required" } });
+  }
+
+  try {
+    const updatedUser = updateUser(id, {
+      name,
+      nickname,
+      profession,
+      phone,
+      bio,
+      gender,
+    });
+
+    if (!updatedUser) {
+      return res.status(404).json({ ok: false, error: { message: "User not found" } });
+    }
+
+    const t = getTotalByUserId(id);
+    const total = t ? t.total : 0;
+    const label =
+      (updatedUser.nickname && updatedUser.nickname.trim()) || updatedUser.name || `Player ${id}`;
+
+    res.json({
+      ok: true,
+      data: {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        nickname: updatedUser.nickname,
+        profession: updatedUser.profession,
+        uid: updatedUser.uid,
+        phone: updatedUser.phone || null,
+        bio: updatedUser.bio || null,
+        gender: updatedUser.gender || "other",
+        created_ts: updatedUser.created_ts || null,
+        label,
+        total,
+      },
+    });
+  } catch (error) {
+    return res.status(400).json({ ok: false, error: { message: error.message } });
+  }
+}
+
 module.exports = {
   getLeaderboard,
   getUserProfile,
   checkRegister,
   postRegister,
   getResolveUID,
+  putUserProfile,
 };

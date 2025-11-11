@@ -257,6 +257,39 @@ function deleteUserCascade(userId) {
   tx(userId);
 }
 
+function updateUser(id, { name, nickname, profession, phone, bio, gender }) {
+
+  if (!name || typeof name !== "string" || name.trim() === "") {
+    throw new Error("Name is required");
+  }
+
+  const existing = getUserFullById(id);
+  if (!existing) {
+    return null;
+  }
+
+  const allowedGenders = ["male", "female", "other"];
+  const finalGender = gender && allowedGenders.includes(gender.toLowerCase())
+    ? gender.toLowerCase()
+    : existing.gender || "other";
+
+  db.prepare(
+    `UPDATE users 
+     SET name = ?, nickname = ?, profession = ?, phone = ?, bio = ?, gender = ?
+     WHERE id = ?`
+  ).run(
+    name.trim(),
+    nickname ? nickname.trim() : null,
+    profession ? profession.trim() : null,
+    phone ? phone.trim() : null,
+    bio ? bio.trim() : null,
+    finalGender,
+    id
+  );
+
+  return getUserFullById(id);
+}
+
 module.exports = {
   db,
   getUserByUID,
@@ -271,4 +304,5 @@ module.exports = {
   createUserWithUid,
   quickRegisterLink,
   deleteUserCascade,
+  updateUser,
 };

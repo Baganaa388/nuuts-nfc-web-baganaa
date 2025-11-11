@@ -10,7 +10,8 @@ const {
   getUserProfile,
   checkRegister,
   postRegister,
-  getResolveUID
+  getResolveUID,
+  putUserProfile
 } = require("./routes/public");
 const {
   requireAdmin,
@@ -47,6 +48,7 @@ app.use(
 // Public API routes
 app.get("/api/leaderboard", getLeaderboard);
 app.get("/api/user/:id", getUserProfile);
+app.put("/api/users/:id", putUserProfile);
 app.get("/api/register/check", checkRegister);
 app.post("/api/register", postRegister);
 app.get("/api/resolve/:uid", getResolveUID);

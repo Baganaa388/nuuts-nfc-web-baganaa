@@ -13,7 +13,11 @@ async function apiRequest(endpoint, options = {}) {
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: 'Request failed' }));
-    throw new Error(error.error || 'Request failed');
+    // Handle both error formats: { error: "..." } and { error: { message: "..." } }
+    const errorMessage = typeof error.error === 'string' 
+      ? error.error 
+      : error.error?.message || error.message || 'Request failed';
+    throw new Error(errorMessage);
   }
 
   return response.json();
@@ -25,6 +29,10 @@ export const api = {
 
   // User profile
   getUserProfile: (id) => apiRequest(`/user/${id}`),
+  updateUserProfile: (id, data) => apiRequest(`/users/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  }),
 
   // Registration
   checkRegister: (uid) => apiRequest(`/register/check?uid=${encodeURIComponent(uid || '')}`),
