@@ -1,16 +1,68 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
 import { useScrollAnimation } from '../utils/useScrollAnimation';
 
+function getClockLabel() {
+  const d = new Date();
+  return `Last update · ${String(d.getHours()).padStart(2, '0')}:${String(
+    d.getMinutes()
+  ).padStart(2, '0')}`;
+}
+
+function getInitial(text) {
+  if (!text) return '?';
+  const trimmed = text.trim();
+  return trimmed ? trimmed.charAt(0).toUpperCase() : '?';
+}
+
+function DiamondIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <path d="M7.4 3h9.2l4.3 5.4-9 12.6-9-12.6L7.4 3z" />
+    </svg>
+  );
+}
+
+function TrophyIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <path d="M7 4v2h10V4h2a1 1 0 0 1 1 1v2a5 5 0 0 1-4 4.9A4 4 0 0 1 13 15v1h3v2H8v-2h3v-1a4 4 0 0 1-3.98-3.1A5 5 0 0 1 4 7V5a1 1 0 0 1 1-1h2Zm11 3V6h-1v1a3 3 0 0 0 2 2.83V7ZM6 7a3 3 0 0 0 2-2.83V6H7v1Z" />
+    </svg>
+  );
+}
+
 function HomePage() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState(() => getClockLabel());
+
+  const updateClock = useCallback(() => {
+    const label = getClockLabel();
+    setLastUpdate(label);
+    const timerEl = document.getElementById('timer');
+    if (timerEl && timerEl.textContent !== label) {
+      timerEl.textContent = label;
+    }
+  }, []);
+
+  const loadLeaderboard = useCallback(async () => {
+    try {
+      const data = await api.getLeaderboard();
+      setRows(Array.isArray(data.rows) ? data.rows : []);
+      setLoading(false);
+      updateClock();
+    } catch (error) {
+      console.error('Failed to load leaderboard:', error);
+      setLoading(false);
+      updateClock();
+    }
+  }, [updateClock]);
 
   useEffect(() => {
     updateClock();
     const clockInterval = setInterval(updateClock, 15000);
-    
+
     loadLeaderboard();
     const leaderboardInterval = setInterval(loadLeaderboard, 5000);
 
@@ -18,136 +70,211 @@ function HomePage() {
       clearInterval(clockInterval);
       clearInterval(leaderboardInterval);
     };
-  }, []);
+  }, [loadLeaderboard, updateClock]);
 
-  function updateClock() {
-    const el = document.getElementById('timer');
-    if (!el) return;
-    const d = new Date();
-    el.textContent = "Last update · "
-      + String(d.getHours()).padStart(2, '0')
-      + ":" + String(d.getMinutes()).padStart(2, '0');
-  }
+  const [heroRef, heroVisible] = useScrollAnimation({ threshold: 0.1 });
+  const [podiumRef, podiumVisible] = useScrollAnimation({ threshold: 0.1 });
+  const [tableRef, tableVisible] = useScrollAnimation({ threshold: 0.1 });
 
-  async function loadLeaderboard() {
-    try {
-      const data = await api.getLeaderboard();
-      setRows(data.rows || []);
-      setLoading(false);
-    } catch (error) {
-      console.error('Failed to load leaderboard:', error);
-      setLoading(false);
+  const formatter = useMemo(() => new Intl.NumberFormat('en-US'), []);
+  const topThree = useMemo(() => rows.slice(0, 3), [rows]);
+  const others = useMemo(() => rows.slice(3), [rows]);
+  const totalPlayers = rows.length;
+  const isEmpty = !loading && totalPlayers === 0;
+
+  const renderAvatar = (row, size = 'lg') => {
+    const baseClass = `hp-avatar ${size}`;
+    if (row && row.avatarUrl) {
+      return (
+        <div className={baseClass}>
+          <img
+            src={row.avatarUrl}
+            alt={row.label ? `${row.label} avatar` : 'Player avatar'}
+          />
+        </div>
+      );
     }
-  }
 
-  // Use scroll animation for smooth reveal
-  const [heroRef, heroVisible] = useScrollAnimation({ threshold: 0.01 });
-  const [boardRef, boardVisible] = useScrollAnimation({ threshold: 0.01 });
-
-  const heroSection = (
-    <div ref={heroRef} className={`hero scroll-animated ${heroVisible ? 'visible' : ''}`}>
-      <div className="hero-title">Мазаалай баатрууд</div>
-      <div className="hero-sub">
-        Байгаль, зэрлэг амьтны төлөө тууштай зүтгэж буй хүмүүсийн амьд жагсаалт
-      </div>
-      <div className="hero-sub mt-4 text-sm">
-        Энэхүү систем нь <strong>Говийн эзэн Мазаалай</strong> болон Монголын байгалийг хамгаалах 
-        бодит баатруудыг хүлээн зөвшөөрч, тэдний хувь нэмрийг тэмдэглэх зорилготой.
-      </div>
-      <div className="mt-6">
-        <Link to="/about" className="btn">Мазаалай тухай дэлгэрэнгүй</Link>
-      </div>
-    </div>
-  );
-
-  if (loading) {
+    const initial = getInitial(row?.label || row?.name);
     return (
-      <>
-        {heroSection}
-        <div className="board">
-          <div className="board-header">
-            <div>
-              <div className="board-title">Ranger уудийн жагсаалт</div>
-              <div className="board-sub">Уншиж байна...</div>
-            </div>
-          </div>
-        </div>
-      </>
+      <div className={`${baseClass} fallback`}>
+        <span>{initial}</span>
+      </div>
     );
-  }
+  };
 
-  if (!rows.length) {
-    return (
-      <>
-        {heroSection}
-        <div className="board">
-          <div className="board-header">
-            <div>
-              <div className="board-title">Ranger уудийн жагсаалт</div>
-              <div className="board-sub">Одоогоор гүйлгээ хийгдээгүй байна.</div>
-            </div>
-            <div className="chip">Waiting for first NFC tap</div>
-          </div>
-          <div className="table-wrap">
-            <div className="empty">
-              Эхний NFC гүйлгээг хийхэд leaderboard автоматаар гарч ирнэ.
-            </div>
-          </div>
-        </div>
-      </>
-    );
-  }
+  const podiumSlots = [
+    { key: 'second', position: 2, row: topThree[1] },
+    { key: 'first', position: 1, row: topThree[0] },
+    { key: 'third', position: 3, row: topThree[2] },
+  ];
+
+  const makeHandle = (row) => {
+    if (!row) return '@player';
+    if (row.nickname) {
+      return `@${row.nickname.replace(/\s+/g, '').toLowerCase()}`;
+    }
+    if (row.name) {
+      return `@${row.name.replace(/\s+/g, '').toLowerCase()}`;
+    }
+    return `@player${row.id}`;
+  };
 
   return (
-    <>
-      {heroSection}
-      <div ref={boardRef} className={`board scroll-animated ${boardVisible ? 'visible' : ''}`}>
-        <div className="board-header">
-          <div>
-            <div className="board-title">LIVE SCOREBOARD</div>
-            <div className="board-sub">
-              Зөвхөн хэрэглэгчийн хоч (эсвэл нэр) + нийт хөнгөлөлтийн дүн.
+    <div className="homepage">
+      <div className="hp-card">
+        <section
+          ref={heroRef}
+          className={`hp-hero scroll-animated ${heroVisible ? 'visible' : ''}`}
+        >
+          <div className="hp-hero-content">
+            <h1>Мазаалай баатрууд</h1>
+            <p>
+              Байгаль, зэрлэг амьтны төлөө тууштай зүтгэж буй хүмүүсийн амьд
+              жагсаалт. Энэхүү систем нь{' '}
+              <strong>Говийн эзэн Мазаалай</strong> болон Монголын байгалийг
+              хамгаалах баатруудын бодит хувь нэмрийг тэмдэглэнэ.
+            </p>
+          </div>
+          <div className="hp-hero-cta">
+            <Link to="/about" className="hp-hero-button">
+              Мазаалай тухай дэлгэрэнгүй
+            </Link>
+          </div>
+        </section>
+
+        <section
+          ref={podiumRef}
+          className={`hp-podium scroll-animated ${podiumVisible ? 'visible' : ''}`}
+        >
+          <div className="hp-podium-grid">
+            {podiumSlots.map(({ key, position, row }) => {
+              const Wrapper = row ? Link : 'div';
+              const wrapperProps = row ? { to: `/u/${row.id}` } : {};
+              const points = row ? formatter.format(row.total || 0) : '0';
+              return (
+                <Wrapper
+                  key={key}
+                  className={`hp-podium-card ${key} ${!row ? 'empty' : ''}`}
+                  {...wrapperProps}
+                >
+                  <div className="hp-podium-head">
+                    <div className={`hp-podium-trophy ${key}`}>
+                      <TrophyIcon className="hp-trophy" />
+                    </div>
+                    <span className="hp-podium-rank">#{position}</span>
+                  </div>
+                  <div className="hp-podium-avatar">
+                    {renderAvatar(row, key === 'first' ? 'xl' : 'lg')}
+                  </div>
+                  <div className="hp-podium-name">
+                    {row?.label || 'Awaiting hero'}
+                  </div>
+                  <div className="hp-podium-profession">
+                    {row?.profession || 'Мэргэжил бүртгэгдээгүй'}
+                  </div>
+                  <div className="hp-podium-points">
+                    <DiamondIcon className="hp-diamond" />
+                    <span>{points}</span>
+                  </div>
+                </Wrapper>
+              );
+            })}
+          </div>
+        </section>
+
+        <div className="hp-info-banner">
+          Энд бүртгэлтэй хүмүүс бол Говийн эзэн Мазаалай болон Монголын
+          байгалийг хамгаалах бодит баатрууд.
+        </div>
+
+        <section
+          ref={tableRef}
+          className={`hp-table-section scroll-animated ${tableVisible ? 'visible' : ''}`}
+        >
+          <div className="hp-table-header">
+            <div>
+              <div className="hp-table-title">Global leaderboard</div>
+              <div className="hp-table-sub">
+                Хамгийн олон оноо цуглуулсан байгаль хамгаалагчид.
+              </div>
+            </div>
+            <div className="hp-table-meta">
+              <span className="hp-table-timer">{lastUpdate}</span>
+              <span className="hp-table-count">Players: {totalPlayers}</span>
             </div>
           </div>
-          <div className="chip-total">
-            <span>Players: {rows.length}</span>
-          </div>
-        </div>
-        <div className="table-wrap">
-          <div className="row head">
-            <div>#</div>
-            <div>Player</div>
-            <div>Total (₮)</div>
-          </div>
-          {rows.map((r, idx) => {
-            const rank = idx + 1;
-            const label = r.label || `Player ${r.id}`;
-            const total = r.total.toLocaleString("en-US");
 
-            let rowClass = "row";
-            if (rank === 1) {
-              rowClass = "row gold";
-            } else if (rank === 2) {
-              rowClass = "row silver";
-            } else if (rank === 3) {
-              rowClass = "row bronze";
-            } else if (rank === 4) {
-              rowClass = "row r4";
-            } else if (rank === 5) {
-              rowClass = "row r5";
-            }
+          <div className="hp-table">
+            <div className="hp-table-row head">
+              <div>Rank</div>
+              <div>User name</div>
+              <div>Мэргэжил</div>
+              <div>Point</div>
+            </div>
 
-            return (
-              <Link key={r.id} to={`/u/${r.id}`} className={rowClass}>
-                <div className="rank">#{rank}</div>
-                <div className="name">{label}</div>
-                <div className="amt">{total}</div>
-              </Link>
-            );
-          })}
-        </div>
+            {loading && (
+              <>
+                <div className="hp-table-row skeleton">
+                  <div />
+                  <div />
+                  <div />
+                  <div />
+                </div>
+                <div className="hp-table-row skeleton">
+                  <div />
+                  <div />
+                  <div />
+                  <div />
+                </div>
+              </>
+            )}
+
+            {!loading && isEmpty && (
+              <div className="hp-table-empty">
+                Эхний NFC гүйлгээг хийхэд leaderboard автоматаар гарч ирнэ.
+              </div>
+            )}
+
+            {!loading &&
+              !isEmpty &&
+              others.map((row, idx) => {
+                const rank = idx + 4;
+                const handle = makeHandle(row);
+                return (
+                  <Link
+                    key={row.id}
+                    to={`/u/${row.id}`}
+                    className="hp-table-row"
+                  >
+                    <div className="hp-table-rank">#{rank}</div>
+                    <div className="hp-table-user">
+                      {renderAvatar(row, 'xs')}
+                      <div>
+                        <div className="hp-table-name">{row.label}</div>
+                        <div className="hp-table-handle">{handle}</div>
+                      </div>
+                    </div>
+                    <div className="hp-table-profession">
+                      {row.profession || '—'}
+                    </div>
+                    <div className="hp-table-points">
+                      <DiamondIcon className="hp-diamond" />
+                      <span>{formatter.format(row.total || 0)}</span>
+                    </div>
+                  </Link>
+                );
+              })}
+
+            {!loading && !isEmpty && others.length === 0 && (
+              <div className="hp-table-empty subtle">
+                Одоогоор эхний 3 баатар л бүртгэлтэй байна.
+              </div>
+            )}
+          </div>
+        </section>
       </div>
-    </>
+    </div>
   );
 }
 

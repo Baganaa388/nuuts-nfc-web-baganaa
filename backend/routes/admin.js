@@ -80,6 +80,13 @@ function postQuickRegisterLink(req, res) {
   const name = (req.body.name || "").toString().trim();
   const nickname = (req.body.nickname || "").toString().trim();
   const profession = (req.body.profession || "").toString().trim();
+  const avatarUrlRaw =
+    typeof req.body.avatar_url === "string"
+      ? req.body.avatar_url
+      : typeof req.body.avatarUrl === "string"
+      ? req.body.avatarUrl
+      : "";
+  const avatarUrl = avatarUrlRaw.toString().trim();
 
   if (!name) {
     return res.status(400).json({
@@ -88,7 +95,13 @@ function postQuickRegisterLink(req, res) {
   }
 
   try {
-    const finalUID = quickRegisterLink({ uid, name, nickname, profession });
+    const finalUID = quickRegisterLink({
+      uid,
+      name,
+      nickname,
+      profession,
+      avatarUrl: avatarUrl || null,
+    });
     return res.json({
       success: true,
       message: `'${name}' бүртгэж UID ${finalUID} холбосон.`

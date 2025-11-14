@@ -1,8 +1,9 @@
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../contexts/useTheme';
 
 function Layout() {
   const { theme, toggleTheme } = useTheme();
+  const location = useLocation();
 
   return (
     <div className="wrap">
@@ -18,9 +19,9 @@ function Layout() {
             <div>
               <div className="text-[11px] tracking-wider uppercase text-amber-500 dark:text-amber-400">MAZAALAI GUARDIANS</div>
               <div className="text-lg font-bold tracking-wide text-slate-900 dark:text-slate-100">Leaderboard</div>
-              <div className="text-[10px] text-slate-600 dark:text-slate-400 leading-snug">
+              {/* <div className="text-[10px] text-slate-600 dark:text-slate-400 leading-snug">
                 Байгаль, зэрлэг амьтны төлөө тууштай зүтгэж буй хүмүүсийн амьд жагсаалт<span className="pulse-dot"></span>
-              </div>
+              </div> */}
             </div>
           </Link>
           <div className="flex flex-col items-end gap-1">
@@ -29,13 +30,21 @@ function Layout() {
               <nav className="flex gap-2 items-center text-[9px]" role="navigation">
                 <Link 
                   to="/" 
-                  className="text-slate-600 dark:text-slate-400 no-underline px-2 py-1 rounded-full border border-transparent transition-all duration-250 hover:text-amber-500 dark:hover:text-amber-400 hover:border-amber-500/20 dark:hover:border-amber-400/20 hover:bg-white dark:hover:bg-slate-800"
+                  className={`no-underline px-2 py-1 rounded-full border transition-all duration-250 ${
+                    location.pathname === '/'
+                      ? 'text-amber-500 dark:text-amber-400 border-amber-500/20 dark:border-amber-400/20 bg-white dark:bg-slate-800'
+                      : 'text-slate-600 dark:text-slate-400 border-transparent hover:text-amber-500 dark:hover:text-amber-400 hover:border-amber-500/20 dark:hover:border-amber-400/20 hover:bg-white dark:hover:bg-slate-800'
+                  }`}
                 >
                   Leaderboard
                 </Link>
                 <Link 
                   to="/about" 
-                  className="text-slate-600 dark:text-slate-400 no-underline px-2 py-1 rounded-full border border-transparent transition-all duration-250 hover:text-amber-500 dark:hover:text-amber-400 hover:border-amber-500/20 dark:hover:border-amber-400/20 hover:bg-white dark:hover:bg-slate-800"
+                  className={`no-underline px-2 py-1 rounded-full border transition-all duration-250 ${
+                    location.pathname === '/about'
+                      ? 'text-amber-500 dark:text-amber-400 border-amber-500/20 dark:border-amber-400/20 bg-white dark:bg-slate-800'
+                      : 'text-slate-600 dark:text-slate-400 border-transparent hover:text-amber-500 dark:hover:text-amber-400 hover:border-amber-500/20 dark:hover:border-amber-400/20 hover:bg-white dark:hover:bg-slate-800'
+                  }`}
                 >
                   About Mazaalai
                 </Link>

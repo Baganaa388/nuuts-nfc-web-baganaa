@@ -12,15 +12,16 @@ const db = new Database(DB_PATH);
 // Schema
 db.exec(`
 CREATE TABLE IF NOT EXISTS users (
-  id         INTEGER PRIMARY KEY AUTOINCREMENT,
-  name       TEXT NOT NULL,
-  nickname   TEXT,
-  profession TEXT,
-  uid        TEXT UNIQUE,
-  phone      TEXT,
-  bio        TEXT,
-  gender     TEXT NOT NULL DEFAULT 'other',
-  created_ts DATETIME DEFAULT CURRENT_TIMESTAMP
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  name        TEXT NOT NULL,
+  nickname    TEXT,
+  profession  TEXT,
+  avatar_url  TEXT,
+  uid         TEXT UNIQUE,
+  phone       TEXT,
+  bio         TEXT,
+  gender      TEXT NOT NULL DEFAULT 'other',
+  created_ts  DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS transactions (
@@ -73,12 +74,19 @@ if (!cols.includes("gender")) {
     console.warn("Could not add column gender:", e.message);
   }
 }
+if (!cols.includes("avatar_url")) {
+  try {
+    db.prepare("ALTER TABLE users ADD COLUMN avatar_url TEXT").run();
+  } catch (e) {
+    console.warn("Could not add column avatar_url:", e.message);
+  }
+}
 
 // ---- Select helpers ----
 function getUserByUID(uid) {
   return db
     .prepare(
-      "SELECT id, name, nickname, profession, phone, bio, gender, uid FROM users WHERE uid = ?"
+      "SELECT id, name, nickname, profession, avatar_url, phone, bio, gender, uid FROM users WHERE uid = ?"
     )
     .get(uid);
 }
@@ -86,7 +94,7 @@ function getUserByUID(uid) {
 function getUserFullById(id) {
   return db
     .prepare(
-      "SELECT id, name, nickname, profession, uid, phone, bio, gender, created_ts FROM users WHERE id = ?"
+      "SELECT id, name, nickname, profession, avatar_url, uid, phone, bio, gender, created_ts FROM users WHERE id = ?"
     )
     .get(id);
 }
@@ -99,7 +107,11 @@ function getLeaderboardRows() {
   return db
     .prepare(
       `SELECT u.id,
+              u.name,
+              u.nickname,
               COALESCE(NULLIF(u.nickname,''), u.name, 'Player ' || u.id) AS label,
+              u.profession,
+              u.avatar_url,
               COALESCE(t.total,0) AS total
        FROM users u
        LEFT JOIN totals t ON t.user_id = u.id
@@ -162,6 +174,7 @@ function createUserWithUid({
   name,
   nickname,
   profession,
+  avatarUrl,
   uid,
   phone,
   bio,
@@ -188,12 +201,13 @@ function createUserWithUid({
 
     const info = db
       .prepare(
-        "INSERT INTO users(name, nickname, profession, uid, phone, bio, gender) VALUES (?,?,?,?,?,?,?)"
+        "INSERT INTO users(name, nickname, profession, avatar_url, uid, phone, bio, gender) VALUES (?,?,?,?,?,?,?,?)"
       )
       .run(
         name,
         nickname || null,
         profession || null,
+        avatarUrl || null,
         finalUID,
         phone || null,
         bio || null,
@@ -208,6 +222,7 @@ function quickRegisterLink({
   name,
   nickname,
   profession,
+  avatarUrl,
   uid,
   phone,
   bio,
@@ -233,11 +248,12 @@ function quickRegisterLink({
     }
 
     db.prepare(
-      "INSERT INTO users(name, nickname, profession, uid, phone, bio, gender) VALUES (?,?,?,?,?,?,?)"
+      "INSERT INTO users(name, nickname, profession, avatar_url, uid, phone, bio, gender) VALUES (?,?,?,?,?,?,?,?)"
     ).run(
       name,
       nickname || null,
       profession || null,
+      avatarUrl || null,
       finalUID,
       phone || null,
       bio || null,
@@ -257,7 +273,10 @@ function deleteUserCascade(userId) {
   tx(userId);
 }
 
-function updateUser(id, { name, nickname, profession, phone, bio, gender }) {
+function updateUser(
+  id,
+  { name, nickname, profession, avatarUrl, phone, bio, gender }
+) {
 
   if (!name || typeof name !== "string" || name.trim() === "") {
     throw new Error("Name is required");
@@ -272,15 +291,24 @@ function updateUser(id, { name, nickname, profession, phone, bio, gender }) {
   const finalGender = gender && allowedGenders.includes(gender.toLowerCase())
     ? gender.toLowerCase()
     : existing.gender || "other";
+  const finalAvatar =
+    typeof avatarUrl === "string"
+      ? avatarUrl.trim() === ""
+        ? null
+        : avatarUrl.trim()
+      : avatarUrl === null
+      ? null
+      : existing.avatar_url || null;
 
   db.prepare(
     `UPDATE users 
-     SET name = ?, nickname = ?, profession = ?, phone = ?, bio = ?, gender = ?
+     SET name = ?, nickname = ?, profession = ?, avatar_url = ?, phone = ?, bio = ?, gender = ?
      WHERE id = ?`
   ).run(
     name.trim(),
     nickname ? nickname.trim() : null,
     profession ? profession.trim() : null,
+    finalAvatar,
     phone ? phone.trim() : null,
     bio ? bio.trim() : null,
     finalGender,
@@ -297,6 +325,7 @@ module.exports = {
   getTotalByUserId,
   getLeaderboardRows,
   searchUsers,
+  
   listUsers,
   getLastScan,
   insertScan,

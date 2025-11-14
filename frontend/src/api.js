@@ -25,7 +25,25 @@ async function apiRequest(endpoint, options = {}) {
 
 export const api = {
   // Leaderboard
-  getLeaderboard: () => apiRequest('/leaderboard'),
+  getLeaderboard: async () => {
+    const data = await apiRequest('/leaderboard');
+    const rows = Array.isArray(data.rows) ? data.rows : [];
+    return {
+      ...data,
+      rows: rows.map((row) => {
+        const { avatar_url, total, profession, ...rest } = row;
+        return {
+          ...rest,
+          profession: profession || null,
+          avatarUrl: avatar_url || null,
+          total:
+            typeof total === "number"
+              ? total
+              : Number.parseFloat(total) || 0,
+        };
+      }),
+    };
+  },
 
   // User profile
   getUserProfile: (id) => apiRequest(`/user/${id}`),

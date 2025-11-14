@@ -36,6 +36,7 @@ function getUserProfile(req, res) {
     name: user.name,
     nickname: user.nickname,
     profession: user.profession,
+    avatar_url: user.avatar_url || null,
     uid: user.uid,
     phone: user.phone || null,
     bio: user.bio || null,
@@ -69,6 +70,13 @@ function postRegister(req, res) {
   const name = (req.body.name || "").toString().trim();
   const nickname = (req.body.nickname || "").toString().trim();
   const profession = (req.body.profession || "").toString().trim();
+  const avatarUrlRaw =
+    typeof req.body.avatar_url === "string"
+      ? req.body.avatar_url
+      : typeof req.body.avatarUrl === "string"
+      ? req.body.avatarUrl
+      : "";
+  const avatarUrl = avatarUrlRaw.toString().trim();
   const phone = (req.body.phone || "").toString().trim();
   const bio = (req.body.bio || "").toString().trim();
   const gender = (req.body.gender || "other").toString().trim().toLowerCase();
@@ -85,6 +93,7 @@ function postRegister(req, res) {
     name,
     nickname,
     profession,
+    avatarUrl: avatarUrl || null,
     uid: uid || null,
     // currently phone and bio are optional; gender defaults to 'other' if not valid
     phone: phone || null,
@@ -128,17 +137,29 @@ function putUserProfile(req, res) {
   }
 
   // Extract only editable fields from request body
-  const { name, nickname, profession, phone, bio, gender } = req.body;
+  const {
+    name,
+    nickname,
+    profession,
+    avatar_url,
+    avatarUrl,
+    phone,
+    bio,
+    gender,
+  } = req.body;
 
   if (!name || typeof name !== "string" || name.trim() === "") {
     return res.status(400).json({ ok: false, error: { message: "Name is required" } });
   }
 
   try {
+    const resolvedAvatar =
+      avatar_url !== undefined ? avatar_url : avatarUrl;
     const updatedUser = updateUser(id, {
       name,
       nickname,
       profession,
+      avatarUrl: resolvedAvatar,
       phone,
       bio,
       gender,
