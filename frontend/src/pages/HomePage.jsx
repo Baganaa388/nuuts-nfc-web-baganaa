@@ -122,11 +122,10 @@ function HomePage() {
 
   return (
     <div className="homepage">
-      <div className="hp-card">
-        <section
-          ref={heroRef}
-          className={`hp-hero scroll-animated ${heroVisible ? 'visible' : ''}`}
-        >
+      <section
+        ref={heroRef}
+        className={`hp-hero scroll-animated ${heroVisible ? 'visible' : ''}`}
+      >
           <div className="hp-hero-content">
             <h1>Мазаалай баатрууд</h1>
             <p>
@@ -273,7 +272,6 @@ function HomePage() {
             )}
           </div>
         </section>
-      </div>
     </div>
   );
 }
