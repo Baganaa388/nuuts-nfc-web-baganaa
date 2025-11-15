@@ -8,29 +8,26 @@ function Layout() {
   return (
     <div className="wrap">
       {/* Fixed navbar with consistent height */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-20 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-700/50 shadow-sm">
-        <div className="w-full max-w-[980px] mx-auto px-4 sm:px-6 h-full flex justify-between items-center gap-4">
-          <Link to="/" className="flex items-center gap-2.5 text-inherit no-underline transition-transform duration-250 hover:translate-x-0.5">
+      <header className="fixed top-0 left-0 right-0 z-50 h-16 sm:h-20 bg-white/70 dark:bg-slate-900/60 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-700/50 shadow-sm">
+        <div className="w-full max-w-[980px] mx-auto px-3 sm:px-4 md:px-6 h-full flex justify-between items-center gap-2 sm:gap-4">
+          <Link to="/" className="flex items-center gap-1.5 sm:gap-2.5 text-inherit no-underline transition-transform duration-250 hover:translate-x-0.5 flex-shrink-0">
             <img
               src="https://scontent-nrt1-1.xx.fbcdn.net/v/t39.30808-6/275130473_1299560400455995_8693570699170206627_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=va6tg0kTL04Q7kNvwEffGxP&_nc_oc=AdloglaDXdNDZ8RzWHcZ010T_1gFedw0UJsp0KvM6QgKdJSebG8ka6D2owRydZ5a-PNlDrUMDwmmjV8DBrxCm0eJ&_nc_zt=23&_nc_ht=scontent-nrt1-1.xx&_nc_gid=DRvdxGFvSSGFsvzhhOio6g&oh=00_Afim9YAIhWMa3ytpxEDqaMIfYV07-2tDBpz4gMCZ6Wl8ag&oe=69153B7F"
               alt="Mazaalai logo"
-              className="w-10 h-10 rounded-full object-cover border-2 border-amber-400 dark:border-amber-500 shadow-[0_0_18px_rgba(255,240,1,0.16)] transition-all duration-250"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-amber-400 dark:border-amber-500 shadow-[0_0_18px_rgba(255,240,1,0.16)] transition-all duration-250 flex-shrink-0"
             />
-            <div>
-              <div className="text-[11px] tracking-wider uppercase text-amber-500 dark:text-amber-400">Secret Rangers</div>
-              <div className="text-lg font-bold tracking-wide text-slate-900 dark:text-slate-100">WE ARE SILENT HEROES</div>
-              {/* <div className="text-[10px] text-slate-600 dark:text-slate-400 leading-snug">
-                Байгаль, зэрлэг амьтны төлөө тууштай зүтгэж буй хүмүүсийн амьд жагсаалт<span className="pulse-dot"></span>
-              </div> */}
+            <div className="min-w-0">
+              <div className="text-[9px] sm:text-[10px] md:text-[11px] tracking-wider uppercase text-amber-500 dark:text-amber-400 whitespace-nowrap">Secret Rangers</div>
+              <div className="text-sm sm:text-base md:text-lg font-bold tracking-wide text-slate-900 dark:text-slate-100 leading-tight truncate sm:whitespace-normal">WE ARE SILENT HEROES</div>
             </div>
           </Link>
-          <div className="flex flex-col items-end gap-1">
-            <div className="text-[10px] text-slate-600 dark:text-slate-400" id="timer">Last update · --:--</div>
-            <div className="flex items-center gap-2">
-              <nav className="flex gap-2 items-center text-[9px]" role="navigation">
+          <div className="flex flex-col items-end gap-0.5 sm:gap-1 flex-shrink-0">
+            <div className="hidden sm:block text-[9px] sm:text-[10px] text-slate-600 dark:text-slate-400 whitespace-nowrap" id="timer">Last update · --:--</div>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <nav className="flex gap-1 sm:gap-2 items-center" role="navigation">
                 <Link 
                   to="/" 
-                  className={`no-underline px-2 py-1 rounded-full border transition-all duration-250 ${
+                  className={`no-underline px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full border transition-all duration-250 text-[8px] sm:text-[9px] whitespace-nowrap ${
                     location.pathname === '/'
                       ? 'text-amber-500 dark:text-amber-400 border-amber-500/20 dark:border-amber-400/20 bg-white dark:bg-slate-800'
                       : 'text-slate-600 dark:text-slate-400 border-transparent hover:text-amber-500 dark:hover:text-amber-400 hover:border-amber-500/20 dark:hover:border-amber-400/20 hover:bg-white dark:hover:bg-slate-800'
@@ -40,27 +37,27 @@ function Layout() {
                 </Link>
                 <Link 
                   to="/about" 
-                  className={`no-underline px-2 py-1 rounded-full border transition-all duration-250 ${
+                  className={`no-underline px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full border transition-all duration-250 text-[8px] sm:text-[9px] whitespace-nowrap ${
                     location.pathname === '/about'
                       ? 'text-amber-500 dark:text-amber-400 border-amber-500/20 dark:border-amber-400/20 bg-white dark:bg-slate-800'
                       : 'text-slate-600 dark:text-slate-400 border-transparent hover:text-amber-500 dark:hover:text-amber-400 hover:border-amber-500/20 dark:hover:border-amber-400/20 hover:bg-white dark:hover:bg-slate-800'
                   }`}
                 >
-                  About Mazaalai
+                  About
                 </Link>
               </nav>
               <button 
-                className="bg-transparent border border-slate-300 dark:border-slate-700 rounded-full w-8 h-8 flex items-center justify-center cursor-pointer text-slate-600 dark:text-slate-400 transition-all duration-250 ml-2 hover:text-amber-500 dark:hover:text-amber-400 hover:border-amber-500/20 dark:hover:border-amber-400/20 hover:bg-white dark:hover:bg-slate-800" 
+                className="bg-transparent border border-slate-300 dark:border-slate-700 rounded-full w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center cursor-pointer text-slate-600 dark:text-slate-400 transition-all duration-250 ml-1 sm:ml-2 hover:text-amber-500 dark:hover:text-amber-400 hover:border-amber-500/20 dark:hover:border-amber-400/20 hover:bg-white dark:hover:bg-slate-800 flex-shrink-0" 
                 onClick={toggleTheme} 
                 aria-label="Toggle theme"
               >
                 {theme === 'dark' ? (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5 sm:w-4 sm:h-4">
                     <circle cx="12" cy="12" r="5"/>
                     <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
                   </svg>
                 ) : (
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5 sm:w-4 sm:h-4">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
                   </svg>
                 )}
@@ -71,7 +68,7 @@ function Layout() {
       </header>
 
       {/* Content with top padding to account for fixed navbar */}
-      <div className="pt-20">
+      <div className="pt-16 sm:pt-20">
         <Outlet />
       </div>
 

@@ -137,5 +137,13 @@ export const api = {
   adminDeleteUser: (userId) => apiRequest('/admin/delete-user', {
     method: 'POST',
     body: JSON.stringify({ user_id: userId })
+  }),
+
+  // Admin: Update user information (all fields including UID)
+  // @param {number} userId - User ID to update
+  // @param {object} data - User data to update (name, nickname, profession, industry, phone, bio, gender, uid)
+  adminUpdateUser: (userId, data) => apiRequest('/admin/update-user', {
+    method: 'PUT',
+    body: JSON.stringify({ user_id: userId, ...data })
   })
 };

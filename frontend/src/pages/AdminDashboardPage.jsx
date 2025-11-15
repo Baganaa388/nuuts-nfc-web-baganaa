@@ -16,6 +16,19 @@ function AdminDashboardPage() {
   
   // Per-user loading states
   const [loadingUsers, setLoadingUsers] = useState({});
+  
+  // Edit user modal state
+  const [editingUser, setEditingUser] = useState(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    nickname: '',
+    profession: '',
+    industry: '',
+    phone: '',
+    bio: '',
+    gender: 'other',
+    uid: ''
+  });
 
   useEffect(() => {
     loadDashboard();
@@ -178,6 +191,55 @@ function AdminDashboardPage() {
       setMessage(result.message);
       setMessageOk(true);
       loadDashboard();
+    } catch (error) {
+      setMessage(error.message);
+      setMessageOk(false);
+    }
+  }
+
+  function handleEditUser(user) {
+    setEditingUser(user);
+    setEditForm({
+      name: user.name || '',
+      nickname: user.nickname || '',
+      profession: user.profession || '',
+      industry: user.industry || '',
+      phone: user.phone || '',
+      bio: user.bio || '',
+      gender: user.gender || 'other',
+      uid: user.uid || ''
+    });
+  }
+
+  function handleCloseEditModal() {
+    setEditingUser(null);
+    setEditForm({
+      name: '',
+      nickname: '',
+      profession: '',
+      industry: '',
+      phone: '',
+      bio: '',
+      gender: 'other',
+      uid: ''
+    });
+  }
+
+  async function handleUpdateUser(e) {
+    e.preventDefault();
+    if (!editingUser) return;
+
+    try {
+      const result = await api.adminUpdateUser(editingUser.id, editForm);
+      setMessage(result.message);
+      setMessageOk(true);
+      handleCloseEditModal();
+      loadDashboard();
+      
+      // Clear message after delay
+      setTimeout(() => {
+        setMessage(null);
+      }, 3000);
     } catch (error) {
       setMessage(error.message);
       setMessageOk(false);
@@ -395,12 +457,20 @@ function AdminDashboardPage() {
                         </button>
                       </td>
                       <td className="p-2 border-b border-slate-200 dark:border-amber-200/10 text-left">
-                        <button 
-                          onClick={() => handleDeleteUser(u.id)}
-                          className="btn text-xs py-1 px-2"
-                        >
-                          Delete
-                        </button>
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={() => handleEditUser(u)}
+                            className="btn text-xs py-1 px-2"
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteUser(u.id)}
+                            className="btn text-xs py-1 px-2 bg-red-500 hover:bg-red-600"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -422,6 +492,149 @@ function AdminDashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                Хэрэглэгч засах: {editingUser.name}
+              </h2>
+              <button
+                onClick={handleCloseEditModal}
+                className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            <form onSubmit={handleUpdateUser} className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Нэр *
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.name}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                    required
+                    className="w-full py-2 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:border-amber-500 dark:focus:border-amber-300 focus:ring-2 focus:ring-amber-500/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Хоч
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.nickname}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, nickname: e.target.value }))}
+                    className="w-full py-2 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:border-amber-500 dark:focus:border-amber-300 focus:ring-2 focus:ring-amber-500/20"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      Мэргэжил
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.profession}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, profession: e.target.value }))}
+                      className="w-full py-2 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:border-amber-500 dark:focus:border-amber-300 focus:ring-2 focus:ring-amber-500/20"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      Салбар
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.industry}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, industry: e.target.value }))}
+                      className="w-full py-2 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:border-amber-500 dark:focus:border-amber-300 focus:ring-2 focus:ring-amber-500/20"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Утас
+                  </label>
+                  <input
+                    type="text"
+                    value={editForm.phone}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                    className="w-full py-2 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:border-amber-500 dark:focus:border-amber-300 focus:ring-2 focus:ring-amber-500/20"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Био
+                  </label>
+                  <textarea
+                    value={editForm.bio}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
+                    rows="3"
+                    className="w-full py-2 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:border-amber-500 dark:focus:border-amber-300 focus:ring-2 focus:ring-amber-500/20"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      Хүйс
+                    </label>
+                    <select
+                      value={editForm.gender}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, gender: e.target.value }))}
+                      className="w-full py-2 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:border-amber-500 dark:focus:border-amber-300 focus:ring-2 focus:ring-amber-500/20"
+                    >
+                      <option value="male">Эрэгтэй</option>
+                      <option value="female">Эмэгтэй</option>
+                      <option value="other">Бусад</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      UID
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.uid}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, uid: e.target.value.toUpperCase() }))}
+                      placeholder="ABCD1234"
+                      className="w-full py-2 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:border-amber-500 dark:focus:border-amber-300 focus:ring-2 focus:ring-amber-500/20"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <button
+                  type="submit"
+                  className="btn flex-1"
+                >
+                  Хадгалах
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCloseEditModal}
+                  className="btn btn-outline flex-1"
+                >
+                  Цуцлах
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

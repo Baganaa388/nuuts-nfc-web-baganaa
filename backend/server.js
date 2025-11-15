@@ -20,7 +20,8 @@ const {
   getAdmin,
   postQuickAddTx,
   postQuickRegisterLink,
-  postDeleteUser
+  postDeleteUser,
+  putUpdateUser
 } = require("./routes/admin");
 
 const app = express();
@@ -65,6 +66,7 @@ app.get("/api/admin/dashboard", requireAdmin, getAdmin);
 app.post("/api/admin/quick-add-tx", requireAdmin, postQuickAddTx);
 app.post("/api/admin/quick-register-link", requireAdmin, postQuickRegisterLink);
 app.post("/api/admin/delete-user", requireAdmin, postDeleteUser);
+app.put("/api/admin/update-user", requireAdmin, putUpdateUser);
 
 // Health check
 app.get("/api/health", (req, res) => {

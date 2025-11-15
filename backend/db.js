@@ -279,6 +279,62 @@ function updateUser(
   return getUserFullById(id);
 }
 
+function updateUserAdmin(
+  id,
+  { name, nickname, profession, industry, phone, bio, gender, uid }
+) {
+  if (!name || typeof name !== "string" || name.trim() === "") {
+    throw new Error("Name is required");
+  }
+
+  const existing = getUserFullById(id);
+  if (!existing) {
+    return null;
+  }
+
+  const allowedGenders = ["male", "female", "other"];
+  const finalGender = gender && allowedGenders.includes(gender.toLowerCase())
+    ? gender.toLowerCase()
+    : existing.gender || "other";
+  const finalIndustry = industry !== undefined 
+    ? (industry && typeof industry === "string" && industry.trim() !== "" ? industry.trim() : null)
+    : existing.industry || null;
+
+  // Handle UID update if provided
+  let finalUID = existing.uid;
+  if (uid !== undefined && uid !== null) {
+    const uidStr = uid.toString().trim().toUpperCase();
+    if (uidStr !== "") {
+      // Check if UID is already taken by another user
+      const uidOwner = getUserByUID(uidStr);
+      if (uidOwner && uidOwner.id !== id) {
+        throw new Error("Энэ UID аль хэдийн өөр хэрэглэгчтэй холбогдсон байна.");
+      }
+      finalUID = uidStr;
+    } else {
+      finalUID = null;
+    }
+  }
+
+  db.prepare(
+    `UPDATE users 
+     SET name = ?, nickname = ?, profession = ?, industry = ?, phone = ?, bio = ?, gender = ?, uid = ?
+     WHERE id = ?`
+  ).run(
+    name.trim(),
+    nickname ? nickname.trim() : null,
+    profession ? profession.trim() : null,
+    finalIndustry,
+    phone ? phone.trim() : null,
+    bio ? bio.trim() : null,
+    finalGender,
+    finalUID,
+    id
+  );
+
+  return getUserFullById(id);
+}
+
 module.exports = {
   db,
   getUserByUID,
@@ -294,4 +350,5 @@ module.exports = {
   quickRegisterLink,
   deleteUserCascade,
   updateUser,
+  updateUserAdmin,
 };

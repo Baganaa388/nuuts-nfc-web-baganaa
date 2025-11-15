@@ -669,6 +669,9 @@
     font-weight: 600;
     color: #e5e7eb;
     margin-bottom: 6px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.3;
   }
 
   [data-theme="light"] .hp-podium-name {
@@ -679,6 +682,9 @@
     font-size: 13px;
     color: #9ca3af;
     margin-bottom: 18px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.4;
   }
 
   [data-theme="light"] .hp-podium-profession {
@@ -696,6 +702,10 @@
     font-size: 14px;
     font-variant-numeric: tabular-nums;
     color: rgba(255, 240, 1, 1);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   [data-theme="light"] .hp-podium-points {
@@ -779,12 +789,12 @@
   .hp-table {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 2px;
   }
 
   .hp-table-row {
     display: grid;
-    grid-template-columns: 70px minmax(0, 2fr) minmax(0, 1.2fr) 140px;
+    grid-template-columns: 70px minmax(0, 2fr) minmax(0, 1.2fr) auto;
     align-items: center;
     padding: 14px 16px;
     border-radius: 16px;
@@ -843,7 +853,7 @@
   .hp-table-user {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
   }
 
   .hp-table-name {
@@ -872,13 +882,15 @@
     justify-self: end;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 14px;
+    gap: 4px;
+    padding: 4px 10px;
     border-radius: 999px;
     border: 1px solid rgba(255, 240, 1, 0.24);
     background: rgba(255, 240, 1, 0.08);
     color: rgba(255, 240, 1, 1);
     font-variant-numeric: tabular-nums;
+    margin-left: auto;
+    white-space: nowrap;
   }
 
   [data-theme="light"] .hp-table-points {
@@ -991,29 +1003,128 @@
     }
 
     .hp-hero {
-      padding: 24px 20px;
+      padding: 20px 16px;
     }
 
     .hp-hero-content h1 {
-      font-size: 24px;
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    .hp-hero-content p {
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .hp-podium {
+      margin-bottom: 20px;
     }
 
     .hp-podium-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
     }
 
     .hp-podium-card {
+      padding: 14px 8px 18px;
       transform: none !important;
+      min-width: 0;
+    }
+
+    .hp-podium-card.first {
+      transform: translateY(-8px) !important;
+      padding-top: 18px;
+    }
+
+    .hp-podium-card.second,
+    .hp-podium-card.third {
+      padding-top: 16px;
     }
 
     .hp-podium-card:hover:not(.empty) {
       transform: translateY(-6px);
     }
 
+    .hp-podium-card.first:hover:not(.empty) {
+      transform: translateY(-12px);
+    }
+
+    .hp-podium-head {
+      margin-bottom: 10px;
+      gap: 6px;
+    }
+
+    .hp-podium-trophy {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    .hp-trophy {
+      width: 14px;
+      height: 14px;
+    }
+
+    .hp-podium-rank {
+      font-size: 9px;
+      white-space: nowrap;
+    }
+
+    .hp-podium-avatar {
+      margin-bottom: 10px;
+    }
+
+    .hp-podium-name {
+      font-size: 12px;
+      margin-bottom: 3px;
+      line-height: 1.2;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      word-break: break-word;
+    }
+
+    .hp-podium-profession {
+      font-size: 10px;
+      margin-bottom: 10px;
+      line-height: 1.3;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      word-break: break-word;
+    }
+
+    .hp-podium-points {
+      padding: 6px 10px;
+      font-size: 11px;
+      gap: 4px;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    .hp-podium-points span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+
+    .hp-diamond {
+      width: 11px;
+      height: 11px;
+      flex-shrink: 0;
+    }
+
     .hp-table-header {
       flex-direction: column;
       align-items: flex-start;
-      gap: 12px;
+      gap: 8px;
     }
 
     .hp-table-meta {
@@ -1025,26 +1136,56 @@
     }
 
     .hp-table-row {
-      grid-template-columns: 56px minmax(0, 1fr);
-      row-gap: 8px;
+      grid-template-columns: 48px minmax(0, 1fr);
+      row-gap: 4px;
+      padding: 10px 8px;
     }
 
     .hp-table-user {
       grid-column: 2;
+      min-width: 0;
     }
 
-    .hp-table-profession,
-    .hp-table-points {
+    .hp-table-name {
+      font-size: 12px;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+
+    .hp-table-handle {
+      font-size: 9px;
+    }
+
+    .hp-table-profession {
       grid-column: 1 / -1;
       justify-self: flex-start;
+      font-size: 11px;
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
 
     .hp-table-points {
-      margin-top: 4px;
+      grid-column: 1 / -1;
+      justify-self: end;
+      margin-top: 0;
+      padding: 4px 8px;
+      font-size: 11px;
+      overflow: hidden;
+    }
+
+    .hp-table-points span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: inline-block;
     }
   }
 
   @media (max-width: 520px) {
+    .homepage {
+      padding: 16px 12px;
+    }
+
     .hp-header {
       gap: 14px;
     }
@@ -1060,14 +1201,147 @@
       gap: 8px;
     }
 
+    .hp-hero {
+      padding: 16px 12px;
+      margin-bottom: 24px;
+    }
+
+    .hp-hero-content h1 {
+      font-size: 20px;
+    }
+
+    .hp-hero-content p {
+      font-size: 12px;
+    }
+
     .hp-hero-button {
       width: 100%;
       text-align: center;
+      padding: 10px 18px;
+      font-size: 12px;
+    }
+
+    .hp-podium {
+      margin-bottom: 14px;
+    }
+
+    .hp-podium-grid {
+      gap: 6px;
+    }
+
+    .hp-podium-card {
+      padding: 12px 6px 16px;
+    }
+
+    .hp-podium-card.first {
+      transform: translateY(-6px) !important;
+      padding-top: 16px;
+    }
+
+    .hp-podium-card.second,
+    .hp-podium-card.third {
+      padding-top: 14px;
+    }
+
+    .hp-podium-head {
+      margin-bottom: 8px;
+      gap: 4px;
+    }
+
+    .hp-podium-trophy {
+      width: 24px;
+      height: 24px;
+    }
+
+    .hp-trophy {
+      width: 12px;
+      height: 12px;
+    }
+
+    .hp-podium-rank {
+      font-size: 8px;
+    }
+
+    .hp-podium-avatar {
+      margin-bottom: 8px;
+    }
+
+    .hp-podium-name {
+      font-size: 11px;
+      -webkit-line-clamp: 1;
+    }
+
+    .hp-podium-profession {
+      font-size: 9px;
+      margin-bottom: 8px;
+      -webkit-line-clamp: 1;
+    }
+
+    .hp-podium-points {
+      padding: 5px 8px;
+      font-size: 10px;
+      gap: 3px;
+    }
+
+    .hp-diamond {
+      width: 10px;
+      height: 10px;
     }
 
     .hp-info-banner {
+      font-size: 11px;
+      padding: 10px 12px;
+      margin-bottom: 16px;
+    }
+
+    .hp-table-section {
+      padding: 20px 0 16px;
+    }
+
+    .hp-table-header {
+      margin-bottom: 16px;
+    }
+
+    .hp-table-title {
+      font-size: 14px;
+    }
+
+    .hp-table-sub {
+      font-size: 11px;
+    }
+
+    .hp-table-meta {
+      font-size: 10px;
+    }
+
+    .hp-table-row {
+      padding: 10px 8px;
+      gap: 4px;
+    }
+
+    .hp-table-rank {
+      font-size: 13px;
+    }
+
+    .hp-table-name {
       font-size: 12px;
-      padding: 12px 14px;
+    }
+
+    .hp-table-handle {
+      font-size: 9px;
+    }
+
+    .hp-table-profession {
+      font-size: 11px;
+    }
+
+    .hp-table-points {
+      padding: 3px 6px;
+      font-size: 10px;
+    }
+
+    .hp-table-points span {
+      max-width: calc(100vw - 120px);
     }
 
     .hp-avatar.sm {
@@ -1078,6 +1352,16 @@
     .hp-avatar.xs {
       width: 34px;
       height: 34px;
+    }
+
+    .hp-avatar.lg {
+      width: 64px;
+      height: 64px;
+    }
+
+    .hp-avatar.xl {
+      width: 80px;
+      height: 80px;
     }
   }
 

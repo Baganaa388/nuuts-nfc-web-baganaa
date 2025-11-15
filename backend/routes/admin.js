@@ -7,7 +7,8 @@ const {
   getTotalByUserId,
   insertTransactionAndUpdateTotal,
   quickRegisterLink,
-  deleteUserCascade
+  deleteUserCascade,
+  updateUserAdmin
 } = require("../db");
 const { ADMIN_USER, ADMIN_PASS } = require("../config");
 
@@ -134,6 +135,62 @@ function postDeleteUser(req, res) {
   }
 }
 
+// PUT /api/admin/update-user
+function putUpdateUser(req, res) {
+  const id = parseInt(req.body.user_id || req.body.id || "0", 10);
+  if (!id) {
+    return res.status(400).json({
+      error: "Хэрэглэгчийн ID шаардлагатай."
+    });
+  }
+
+  const {
+    name,
+    nickname,
+    profession,
+    industry,
+    phone,
+    bio,
+    gender,
+    uid
+  } = req.body;
+
+  if (!name || typeof name !== "string" || name.trim() === "") {
+    return res.status(400).json({
+      error: "Нэр шаардлагатай."
+    });
+  }
+
+  try {
+    const updatedUser = updateUserAdmin(id, {
+      name,
+      nickname,
+      profession,
+      industry,
+      phone,
+      bio,
+      gender,
+      uid
+    });
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        error: "Хэрэглэгч олдсонгүй."
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: `Хэрэглэгч ID ${id} ('${updatedUser.name}') амжилттай засагдлаа.`,
+      user: updatedUser
+    });
+  } catch (e) {
+    return res.status(500).json({
+      error: "Засварлах үед алдаа: " + e.message
+    });
+  }
+}
+
 module.exports = {
   requireAdmin,
   postLogin,
@@ -141,5 +198,6 @@ module.exports = {
   getAdmin,
   postQuickAddTx,
   postQuickRegisterLink,
-  postDeleteUser
+  postDeleteUser,
+  putUpdateUser
 };
