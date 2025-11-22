@@ -12,29 +12,55 @@ function baseUrl(req) {
 }
 
 // POST /api/scan
+// ESP32 эндээс дуудна: { "uid": "04:A1:BC:..." , "amount": 0 эсвэл байхгүй }
 function postScan(req, res) {
   const raw = (req.body && req.body.uid) || "";
   const uid = String(raw).trim().toUpperCase();
+
   if (!uid) {
     return res.status(400).json({ status: "bad", message: "no uid" });
   }
 
+  // scan log хадгална
   insertScan(uid);
 
   const user = getUserByUID(uid);
-  const resp = { status: "ok", uid, linked: !!user };
+  const b = baseUrl(req);
 
+  // Хэрэв amount ирсэн бол (жишээ нь машин дээрээс оноо нэмэх)
+  let amountNote;
+  let addedAmount = 0;
   if (Object.prototype.hasOwnProperty.call(req.body, "amount")) {
     const amount = parseFloat(String(req.body.amount));
     if (user && amount > 0) {
       insertTransactionAndUpdateTotal(user.id, amount);
-      resp.amount = amount;
+      addedAmount = amount;
     } else {
-      resp.note = "amount ignored (no user linked or amt<=0)";
+      amountNote = "amount ignored (no user linked or amt<=0)";
     }
   }
 
-  return res.json(resp);
+  // ХЭРЭВ ХЭРЭГЛЭГЧ БҮРТГЭЛГҮЙ БОЛ
+  if (!user) {
+    return res.json({
+      status: "register",                 // ← ESP32 үүнийг харж register URL бичнэ
+      uid,
+      linked: false,
+      registerUrl: `${b}/register?uid=${encodeURIComponent(uid)}`,
+      note: amountNote
+    });
+  }
+
+  // ХЭРЭВ ХЭРЭГЛЭГЧ БАЙГАА БОЛ
+  return res.json({
+    status: "ok",                         // ← ESP32 үүнийг харж main URL бичнэ
+    uid,
+    linked: true,
+    userId: user.id,
+    profileUrl: `${b}/u/${user.id}`,      // хэрэгтэй бол front талд ашиглаж болно
+    amount: addedAmount || undefined,
+    note: amountNote
+  });
 }
 
 // GET /api/last-scan
@@ -55,7 +81,7 @@ function getLastScanApi(req, res) {
 }
 
 // GET /api/ndef-url?uid=...
-// Returns profile URL if user exists, otherwise returns registration URL
+// (хэрвээ web талд хэрэглэх бол хэвээр нь үлдээнэ)
 function getNdefUrl(req, res) {
   const raw = (req.query.uid || "").toString().trim().toUpperCase();
   if (!raw) {
@@ -85,4 +111,3 @@ module.exports = {
   getLastScanApi,
   getNdefUrl
 };
-
