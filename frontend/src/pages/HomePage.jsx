@@ -1,15 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
 import { useScrollAnimation } from '../utils/useScrollAnimation';
 import { getIndustryImage } from '../utils/industryImages';
-
-function getClockLabel() {
-  const d = new Date();
-  return `Last update · ${String(d.getHours()).padStart(2, '0')}:${String(
-    d.getMinutes()
-  ).padStart(2, '0')}`;
-}
 
 function getInitial(text) {
   if (!text) return '?';
@@ -36,52 +29,99 @@ function TrophyIcon({ className }) {
 function HomePage() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [lastUpdate, setLastUpdate] = useState(() => getClockLabel());
-
-  const updateClock = useCallback(() => {
-    const label = getClockLabel();
-    setLastUpdate(label);
-    const timerEl = document.getElementById('timer');
-    if (timerEl && timerEl.textContent !== label) {
-      timerEl.textContent = label;
-    }
-  }, []);
 
   const loadLeaderboard = useCallback(async () => {
     try {
       const data = await api.getLeaderboard();
       setRows(Array.isArray(data.rows) ? data.rows : []);
       setLoading(false);
-      updateClock();
     } catch (error) {
       console.error('Failed to load leaderboard:', error);
       setLoading(false);
-      updateClock();
     }
-  }, [updateClock]);
+  }, []);
 
   useEffect(() => {
-    updateClock();
-    const clockInterval = setInterval(updateClock, 15000);
-
     loadLeaderboard();
     const leaderboardInterval = setInterval(loadLeaderboard, 5000);
 
     return () => {
-      clearInterval(clockInterval);
       clearInterval(leaderboardInterval);
     };
-  }, [loadLeaderboard, updateClock]);
+  }, [loadLeaderboard]);
 
   const [heroRef, heroVisible] = useScrollAnimation({ threshold: 0.1 });
   const [podiumRef, podiumVisible] = useScrollAnimation({ threshold: 0.1 });
   const [tableRef, tableVisible] = useScrollAnimation({ threshold: 0.1 });
 
   const formatter = useMemo(() => new Intl.NumberFormat('en-US'), []);
-  const topThree = useMemo(() => rows.slice(0, 3), [rows]);
-  const others = useMemo(() => rows.slice(3), [rows]);
+  const topNine = useMemo(() => rows.slice(0, 9), [rows]);
+  const others = useMemo(() => rows.slice(9), [rows]);
   const totalPlayers = rows.length;
   const isEmpty = !loading && totalPlayers === 0;
+
+  // 3D Carousel state
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
+  const carouselRef = useRef(null);
+  const animationRef = useRef(null);
+
+  // Carousel navigation
+  const goToSlide = useCallback((index) => {
+    setCurrentIndex(index);
+  }, []);
+
+  const nextSlide = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % topNine.length);
+  }, [topNine.length]);
+
+  const prevSlide = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + topNine.length) % topNine.length);
+  }, [topNine.length]);
+
+  // Drag handlers
+  const handleDragStart = useCallback((e) => {
+    setIsDragging(true);
+    setStartX(e.type === 'mousedown' ? e.clientX : e.touches[0].clientX);
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+  }, []);
+
+  const handleDragMove = useCallback((e) => {
+    if (!isDragging) return;
+    const currentX = e.type === 'mousemove' ? e.clientX : e.touches[0].clientX;
+    const diff = currentX - startX;
+    setDragOffset(diff);
+  }, [isDragging, startX]);
+
+  const handleDragEnd = useCallback(() => {
+    if (!isDragging) return;
+    setIsDragging(false);
+
+    if (Math.abs(dragOffset) > 80) {
+      if (dragOffset > 0) {
+        prevSlide();
+      } else {
+        nextSlide();
+      }
+    }
+
+    setDragOffset(0);
+  }, [isDragging, dragOffset, nextSlide, prevSlide]);
+
+  // Auto-rotate carousel
+  useEffect(() => {
+    if (topNine.length === 0) return;
+    
+    const interval = setInterval(() => {
+      nextSlide();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [nextSlide, topNine.length]);
 
   const renderAvatar = (row, size = 'lg') => {
     const baseClass = `hp-avatar ${size}`;
@@ -105,12 +145,6 @@ function HomePage() {
       </div>
     );
   };
-
-  const podiumSlots = [
-    { key: 'second', position: 2, row: topThree[1] },
-    { key: 'first', position: 1, row: topThree[0] },
-    { key: 'third', position: 3, row: topThree[2] },
-  ];
 
   const makeHandle = (row) => {
     if (!row) return '@player';
@@ -147,41 +181,140 @@ function HomePage() {
 
         <section
           ref={podiumRef}
-          className={`hp-podium scroll-animated ${podiumVisible ? 'visible' : ''}`}
+          className={`hp-carousel-3d scroll-animated ${podiumVisible ? 'visible' : ''}`}
         >
-          <div className="hp-podium-grid">
-            {podiumSlots.map(({ key, position, row }) => {
-              const Wrapper = row ? Link : 'div';
-              const wrapperProps = row ? { to: `/u/${row.id}` } : {};
-              const points = row ? formatter.format(row.total || 0) : '0';
-              return (
-                <Wrapper
-                  key={key}
-                  className={`hp-podium-card ${key} ${!row ? 'empty' : ''}`}
-                  {...wrapperProps}
-                >
-                  <div className="hp-podium-head">
-                    <div className={`hp-podium-trophy ${key}`}>
-                      <TrophyIcon className="hp-trophy" />
+          <div 
+            className="hp-carousel-stage"
+            ref={carouselRef}
+            onMouseDown={handleDragStart}
+            onMouseMove={handleDragMove}
+            onMouseUp={handleDragEnd}
+            onMouseLeave={handleDragEnd}
+            onTouchStart={handleDragStart}
+            onTouchMove={handleDragMove}
+            onTouchEnd={handleDragEnd}
+          >
+            <div className="hp-carousel-track">
+              {topNine.map((row, index) => {
+                // Calculate circular position
+                const totalCards = topNine.length;
+                const angleStep = 360 / totalCards;
+                const angle = ((index - currentIndex) * angleStep + 360) % 360;
+                
+                // Normalize angle to -180 to 180 range for better calculations
+                const normalizedAngle = angle > 180 ? angle - 360 : angle;
+                const absAngle = Math.abs(normalizedAngle);
+                
+                const isActive = absAngle < angleStep / 2;
+                
+                // Calculate 3D position in circular pattern
+                const radius = 650;
+                const angleRad = (normalizedAngle * Math.PI) / 180;
+                const translateX = Math.sin(angleRad) * radius;
+                const translateZ = Math.cos(angleRad) * radius - radius + (isActive ? 200 : -50);
+                const rotateY = normalizedAngle;
+                
+                // Scale and opacity based on angle
+                const scale = isActive ? 1 : Math.max(0.6, 1 - (absAngle / 180) * 0.4);
+                const opacity = isActive ? 1 : Math.max(0.2, 1 - (absAngle / 180) * 0.8);
+                const blur = isActive ? 0 : Math.min(5, (absAngle / 50) * 2.5);
+
+                const Wrapper = row ? Link : 'div';
+                const wrapperProps = row ? { to: `/u/${row.id}` } : {};
+                const points = row ? formatter.format(row.total || 0) : '0';
+
+                const getTrophyClass = (position) => {
+                  if (position === 1) return 'first';
+                  if (position === 2) return 'second';
+                  if (position === 3) return 'third';
+                  return 'other';
+                };
+
+                return (
+                  <Wrapper
+                    key={row?.id || index}
+                    className={`hp-carousel-card-3d ${isActive ? 'active' : ''} ${!row ? 'empty' : ''}`}
+                    style={{
+                      transform: `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
+                      opacity,
+                      filter: `blur(${blur}px)`,
+                      zIndex: isActive ? 100 : Math.round(50 - absAngle),
+                      pointerEvents: absAngle > 120 ? 'none' : 'auto',
+                    }}
+                    onClick={(e) => {
+                      if (!isActive && row) {
+                        e.preventDefault();
+                        goToSlide(index);
+                      }
+                    }}
+                    {...wrapperProps}
+                  >
+                    <div className="hp-carousel-card-glow"></div>
+                    <div className="hp-carousel-card-content">
+                      <div className="hp-carousel-rank-badge">
+                        <div className={`hp-carousel-trophy ${getTrophyClass(index + 1)}`}>
+                          <TrophyIcon className="hp-trophy" />
+                        </div>
+                        <span className="hp-carousel-rank-number">#{index + 1}</span>
+                      </div>
+                      
+                      <div className="hp-carousel-avatar-container">
+                        {renderAvatar(row, 'xl')}
+                      </div>
+                      
+                      <div className="hp-carousel-info">
+                        <h3 className="hp-carousel-name">
+                          {row?.label || 'Awaiting hero'}
+                        </h3>
+                        <p className="hp-carousel-role">
+                          {row?.profession || 'Мэргэжил бүртгэгдээгүй'}
+                        </p>
+                      </div>
+                      
+                      <div className="hp-carousel-score">
+                        <DiamondIcon className="hp-carousel-gem" />
+                        <span className="hp-carousel-points">{points}</span>
+                      </div>
                     </div>
-                    <span className="hp-podium-rank">#{position}</span>
-                  </div>
-                  <div className="hp-podium-avatar">
-                    {renderAvatar(row, key === 'first' ? 'xl' : 'lg')}
-                  </div>
-                  <div className="hp-podium-name">
-                    {row?.label || 'Awaiting hero'}
-                  </div>
-                  <div className="hp-podium-profession">
-                    {row?.profession || 'Мэргэжил бүртгэгдээгүй'}
-                  </div>
-                  <div className="hp-podium-points">
-                    <DiamondIcon className="hp-diamond" />
-                    <span>{points}</span>
-                  </div>
-                </Wrapper>
-              );
-            })}
+                  </Wrapper>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="hp-carousel-controls">
+            <button 
+              className="hp-carousel-btn hp-carousel-btn-prev"
+              onClick={prevSlide}
+              disabled={topNine.length === 0}
+              aria-label="Previous hero"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+              </svg>
+            </button>
+            
+            <div className="hp-carousel-dots">
+              {topNine.map((_, index) => (
+                <button
+                  key={index}
+                  className={`hp-carousel-dot ${index === currentIndex ? 'active' : ''}`}
+                  onClick={() => goToSlide(index)}
+                  aria-label={`Go to hero ${index + 1}`}
+                />
+              ))}
+            </div>
+            
+            <button 
+              className="hp-carousel-btn hp-carousel-btn-next"
+              onClick={nextSlide}
+              disabled={topNine.length === 0}
+              aria-label="Next hero"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" />
+              </svg>
+            </button>
           </div>
         </section>
 
@@ -202,7 +335,6 @@ function HomePage() {
               </div>
             </div>
             <div className="hp-table-meta">
-              <span className="hp-table-timer">{lastUpdate}</span>
               <span className="hp-table-count">Players: {totalPlayers}</span>
             </div>
           </div>
@@ -241,7 +373,7 @@ function HomePage() {
             {!loading &&
               !isEmpty &&
               others.map((row, idx) => {
-                const rank = idx + 4;
+                const rank = idx + 10;
                 const handle = makeHandle(row);
                 return (
                   <Link
@@ -270,7 +402,7 @@ function HomePage() {
 
             {!loading && !isEmpty && others.length === 0 && (
               <div className="hp-table-empty subtle">
-                Одоогоор эхний 3 баатар л бүртгэлтэй байна.
+                Одоогоор эхний 9 баатар л бүртгэлтэй байна.
               </div>
             )}
           </div>

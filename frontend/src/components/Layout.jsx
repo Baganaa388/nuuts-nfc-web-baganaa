@@ -14,15 +14,15 @@ function Layout() {
             <img
               src="/nyyts.png"
               alt="Mazaalai logo"
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-fill shadow-[0_0_18px_rgba(255,240,1,0.16)] transition-all duration-250 flex-shrink-0"
+              className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0"
             />
             <div className="min-w-0">
-              <div className="text-[9px] sm:text-[10px] md:text-[11px] tracking-wider uppercase text-amber-500 dark:text-amber-400 whitespace-nowrap">Secret Rangers</div>
-              <div className="text-sm sm:text-base md:text-lg font-bold tracking-wide text-slate-900 dark:text-slate-100 leading-tight truncate sm:whitespace-normal">WE ARE SILENT HEROES</div>
+              <div className="text-[9px] sm:text-[10px] md:text-[11px] tracking-wider uppercase text-amber-500 dark:text-amber-400 whitespace-nowrap">Nyyts Rangers</div>
+              <div className="text-sm sm:text-base md:text-lg font-bold tracking-wide text-slate-900 dark:text-slate-100 leading-tight truncate sm:whitespace-normal">GOBI BEAR FOUNDATION</div>
             </div>
           </Link>
           <div className="flex flex-col items-end gap-0.5 sm:gap-1 flex-shrink-0">
-            <div className="hidden sm:block text-[9px] sm:text-[10px] text-slate-600 dark:text-slate-400 whitespace-nowrap" id="timer">Last update · --:--</div>
+          
             <div className="flex items-center gap-1 sm:gap-2">
               <nav className="flex gap-1 sm:gap-2 items-center" role="navigation">
                 <Link 
