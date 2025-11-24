@@ -124,13 +124,6 @@ export const api = {
     body: JSON.stringify(data)
   }),
 
-  // Admin: Quick register user (requires UID from NFC reader)
-  // @param {object} data - User data (uid, name, nickname, profession, industry)
-  // Note: UID is required and must come from NFC reader
-  adminQuickRegister: (data) => apiRequest('/admin/quick-register-link', {
-    method: 'POST',
-    body: JSON.stringify(data)
-  }),
 
   // Admin: Delete user and all associated data
   // @param {number} userId - User ID to delete

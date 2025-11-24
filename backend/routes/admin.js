@@ -6,7 +6,6 @@ const {
   getUserByUID,
   getTotalByUserId,
   insertTransactionAndUpdateTotal,
-  quickRegisterLink,
   deleteUserCascade,
   updateUserAdmin
 } = require("../db");
@@ -71,47 +70,6 @@ function postQuickAddTx(req, res) {
     success: true,
     message: `ID ${user.id} · ${user.name} +${amount.toFixed(0)}₮ нэмлээ`
   });
-}
-
-// POST /api/admin/quick-register-link
-function postQuickRegisterLink(req, res) {
-  // Convert empty UID string to null so quickRegisterLink can generate random UID
-  const uidRaw = (req.body.uid || "").toString().trim();
-  const uid = uidRaw === "" ? null : uidRaw;
-  const name = (req.body.name || "").toString().trim();
-  const nickname = (req.body.nickname || "").toString().trim();
-  const profession = (req.body.profession || "").toString().trim();
-  const industry = (req.body.industry || "").toString().trim();
-
-  if (!name) {
-    return res.status(400).json({
-      error: "Нэр хоосон."
-    });
-  }
-
-  if (!uid) {
-    return res.status(400).json({
-      error: "UID шаардлагатай. NFC reader-ээс UID авах шаардлагатай."
-    });
-  }
-
-  try {
-    const finalUID = quickRegisterLink({
-      uid,
-      name,
-      nickname,
-      profession,
-      industry: industry || null,
-    });
-    return res.json({
-      success: true,
-      message: `'${name}' бүртгэж UID ${finalUID} холбосон.`
-    });
-  } catch (e) {
-    return res.status(500).json({
-      error: "Алдаа: " + e.message
-    });
-  }
 }
 
 // POST /api/admin/delete-user
@@ -197,7 +155,6 @@ module.exports = {
   postLogout,
   getAdmin,
   postQuickAddTx,
-  postQuickRegisterLink,
   postDeleteUser,
   putUpdateUser
 };

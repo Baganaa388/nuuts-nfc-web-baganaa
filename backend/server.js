@@ -19,7 +19,6 @@ const {
   postLogout,
   getAdmin,
   postQuickAddTx,
-  postQuickRegisterLink,
   postDeleteUser,
   putUpdateUser
 } = require("./routes/admin");
@@ -64,7 +63,6 @@ app.post("/api/admin/login", postLogin);
 app.post("/api/admin/logout", postLogout);
 app.get("/api/admin/dashboard", requireAdmin, getAdmin);
 app.post("/api/admin/quick-add-tx", requireAdmin, postQuickAddTx);
-app.post("/api/admin/quick-register-link", requireAdmin, postQuickRegisterLink);
 app.post("/api/admin/delete-user", requireAdmin, postDeleteUser);
 app.put("/api/admin/update-user", requireAdmin, putUpdateUser);
 

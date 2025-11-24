@@ -12,7 +12,6 @@ function AdminDashboardPage() {
 
   // Form states
   const [txForm, setTxForm] = useState({ uid: '', amount: '', user_label: '' });
-  const [regForm, setRegForm] = useState({ uid: '', name: '', nickname: '', profession: '' });
   
   // Per-user loading states
   const [loadingUsers, setLoadingUsers] = useState({});
@@ -78,22 +77,8 @@ function AdminDashboardPage() {
               amount: ''
             };
           });
-          setRegForm({ uid: '', name: '', nickname: '', profession: '' });
         } else {
-          // No user - show registration form
-          // Only update if UID changed (don't overwrite if user is typing)
-          setRegForm(prev => {
-            if (prev.uid === data.uid && (prev.name || prev.nickname || prev.profession)) {
-              return prev;
-            }
-            return {
-              uid: data.uid,
-              name: '',
-              nickname: '',
-              profession: ''
-            };
-          });
-          // Only clear txForm if UID changed
+          // No user - clear transaction form
           setTxForm(prev => {
             if (prev.uid === data.uid) {
               return prev;
@@ -105,7 +90,6 @@ function AdminDashboardPage() {
         // UID was cleared - reset forms
         setLastScan(data);
         setTxForm({ uid: '', user_label: '', amount: '' });
-        setRegForm({ uid: '', name: '', nickname: '', profession: '' });
       } else {
         // No change - just update lastScan state without triggering form updates
         setLastScan(data);
@@ -129,29 +113,6 @@ function AdminDashboardPage() {
         setTxForm({ uid: '', amount: '', user_label: '' });
         setMessage(null);
       }, 2000);
-    } catch (error) {
-      setMessage(error.message);
-      setMessageOk(false);
-    }
-  }
-
-  async function handleQuickRegister(e) {
-    e.preventDefault();
-    try {
-      if (!regForm.uid || !regForm.uid.trim()) {
-        setMessage("UID шаардлагатай. NFC reader-ээс UID авах шаардлагатай.");
-        setMessageOk(false);
-        return;
-      }
-      const result = await api.adminQuickRegister({
-        ...regForm,
-        uid: regForm.uid.trim()
-      });
-      setMessage(result.message);
-      setMessageOk(true);
-      setRegForm({ uid: '', name: '', nickname: '', profession: '' });
-      loadDashboard();
-      loadLastScan();
     } catch (error) {
       setMessage(error.message);
       setMessageOk(false);
@@ -327,72 +288,10 @@ function AdminDashboardPage() {
             </form>
           )}
 
-          {regForm.uid && (
-            <form id="formQuickReg" onSubmit={handleQuickRegister}>
-              <input 
-                type="text" 
-                name="uid" 
-                value={regForm.uid} 
-                readOnly 
-                className="w-full mb-2 py-1.5 px-2 rounded-md border border-slate-300 dark:border-slate-700 text-xs bg-amber-50 dark:bg-amber-50 text-amber-900 dark:text-amber-900"
-              />
-              <div className="flex gap-2 flex-wrap mb-2">
-                <input
-                  name="name"
-                  placeholder="Нэр"
-                  value={regForm.name}
-                  onChange={(e) => setRegForm(prev => ({ ...prev, name: e.target.value }))}
-                  required
-                  className="flex-1 py-1.5 px-2 rounded-md border border-slate-300 dark:border-slate-700 mb-2 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs font-sans transition-all duration-250 focus:outline-none focus:border-amber-500 dark:focus:border-amber-300 focus:ring-2 focus:ring-amber-500/20 dark:focus:ring-amber-300/20"
-                />
-                <input
-                  name="nickname"
-                  placeholder="Хоч"
-                  value={regForm.nickname}
-                  onChange={(e) => setRegForm(prev => ({ ...prev, nickname: e.target.value }))}
-                  className="flex-1 py-1.5 px-2 rounded-md border border-slate-300 dark:border-slate-700 mb-2 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs font-sans transition-all duration-250 focus:outline-none focus:border-amber-500 dark:focus:border-amber-300 focus:ring-2 focus:ring-amber-500/20 dark:focus:ring-amber-300/20"
-                />
-                <input
-                  name="profession"
-                  placeholder="Мэргэжил"
-                  value={regForm.profession}
-                  onChange={(e) => setRegForm(prev => ({ ...prev, profession: e.target.value }))}
-                  className="flex-1 py-1.5 px-2 rounded-md border border-slate-300 dark:border-slate-700 mb-2 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs font-sans transition-all duration-250 focus:outline-none focus:border-amber-500 dark:focus:border-amber-300 focus:ring-2 focus:ring-amber-500/20 dark:focus:ring-amber-300/20"
-                />
-              </div>
-              <button type="submit" className="btn">Бүртгээд холбох</button>
-            </form>
-          )}
-          
-          {!txForm.uid && !regForm.uid && (
-            <form id="formQuickRegManual" onSubmit={handleQuickRegister}>
-              <p className="text-slate-600 dark:text-slate-400 text-xs mb-2">UID-г NFC reader-ээс авах шаардлагатай</p>
-              <div className="flex gap-2 flex-wrap mb-2">
-                <input
-                  name="name"
-                  placeholder="Нэр *"
-                  value={regForm.name}
-                  onChange={(e) => setRegForm(prev => ({ ...prev, name: e.target.value }))}
-                  required
-                  className="flex-1 py-1.5 px-2 rounded-md border border-slate-300 dark:border-slate-700 mb-2 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs font-sans transition-all duration-250 focus:outline-none focus:border-amber-500 dark:focus:border-amber-300 focus:ring-2 focus:ring-amber-500/20 dark:focus:ring-amber-300/20"
-                />
-                <input
-                  name="nickname"
-                  placeholder="Хоч"
-                  value={regForm.nickname}
-                  onChange={(e) => setRegForm(prev => ({ ...prev, nickname: e.target.value }))}
-                  className="flex-1 py-1.5 px-2 rounded-md border border-slate-300 dark:border-slate-700 mb-2 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs font-sans transition-all duration-250 focus:outline-none focus:border-amber-500 dark:focus:border-amber-300 focus:ring-2 focus:ring-amber-500/20 dark:focus:ring-amber-300/20"
-                />
-                <input
-                  name="profession"
-                  placeholder="Мэргэжил"
-                  value={regForm.profession}
-                  onChange={(e) => setRegForm(prev => ({ ...prev, profession: e.target.value }))}
-                  className="flex-1 py-1.5 px-2 rounded-md border border-slate-300 dark:border-slate-700 mb-2 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-xs font-sans transition-all duration-250 focus:outline-none focus:border-amber-500 dark:focus:border-amber-300 focus:ring-2 focus:ring-amber-500/20 dark:focus:ring-amber-300/20"
-                />
-              </div>
-              <button type="submit" className="btn">Хэрэглэгч үүсгэх (UID автоматаар)</button>
-            </form>
+          {!txForm.uid && (
+            <p className="text-slate-600 dark:text-slate-400 text-xs">
+              NFC reader-ээс UID уншуулаад хэрэглэгч олдохыг хүлээнэ үү.
+            </p>
           )}
 
           {message && (
