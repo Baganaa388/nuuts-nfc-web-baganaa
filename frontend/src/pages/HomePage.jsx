@@ -318,10 +318,10 @@ function HomePage() {
           </div>
         </section>
 
-        <div className="hp-info-banner">
+        {/* <div className="hp-info-banner">
           Энд бүртгэлтэй хүмүүс бол Говийн эзэн Мазаалай болон Монголын
           байгалийг хамгаалах бодит баатрууд.
-        </div>
+        </div> */}
 
         <section
           ref={tableRef}
@@ -380,9 +380,9 @@ function HomePage() {
                         <div className="hp-table-user-info-new">
                           <span className="hp-table-name-new">{row.label}</span>
                           <span className="hp-table-handle-new">{handle}</span>
-                          <div className="hp-table-profession-mobile-new">
+                          {/* <div className="hp-table-profession-mobile-new">
                             {row.profession || '—'}
-                          </div>
+                          </div> */}
                         </div>
                       </div>
                     </div>
