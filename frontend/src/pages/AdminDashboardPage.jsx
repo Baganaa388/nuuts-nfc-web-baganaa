@@ -324,7 +324,7 @@ function AdminDashboardPage() {
                   <th className="p-2 border-b border-slate-200 dark:border-amber-200/10 text-left font-semibold text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-900">Хоч</th>
                   <th className="p-2 border-b border-slate-200 dark:border-amber-200/10 text-left font-semibold text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-900">UID</th>
                   <th className="p-2 border-b border-slate-200 dark:border-amber-200/10 text-left font-semibold text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-900">Нийт</th>
-                  <th className="p-2 border-b border-slate-200 dark:border-amber-200/10 text-left font-semibold text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-900">Тест Scan</th>
+                  <th className="p-2 border-b border-slate-200 dark:border-amber-200/10 text-left font-semibold text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-900">Scan</th>
                   <th className="p-2 border-b border-slate-200 dark:border-amber-200/10 text-left font-semibold text-slate-900 dark:text-slate-100 bg-slate-50 dark:bg-slate-900">Үйлдэл</th>
                 </tr>
               </thead>

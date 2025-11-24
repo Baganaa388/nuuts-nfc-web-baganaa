@@ -327,39 +327,29 @@ function HomePage() {
           ref={tableRef}
           className={`hp-table-section scroll-animated ${tableVisible ? 'visible' : ''}`}
         >
-          <div className="hp-table-header">
-            <div>
-              <div className="hp-table-title">Global leaderboard</div>
-              <div className="hp-table-sub">
-                Хамгийн олон оноо цуглуулсан байгаль хамгаалагчид.
-              </div>
-            </div>
-            <div className="hp-table-meta">
-              <span className="hp-table-count">Players: {totalPlayers}</span>
-            </div>
-          </div>
 
-          <div className="hp-table">
-            <div className="hp-table-row head">
-              <div>Rank</div>
-              <div>User name</div>
-              <div>Мэргэжил</div>
-              <div>Point</div>
+
+          <div className="hp-table-new">
+            <div className="hp-table-row-new head">
+              <span className="hp-table-col-rank">Rank</span>
+              <span className="hp-table-col-user">User</span>
+              <span className="hp-table-col-profession">Мэргэжил</span>
+              <span className="hp-table-col-points">Point</span>
             </div>
 
             {loading && (
               <>
-                <div className="hp-table-row skeleton">
-                  <div />
-                  <div />
-                  <div />
-                  <div />
+                <div className="hp-table-row-new skeleton">
+                  <div className="hp-table-col-rank" />
+                  <div className="hp-table-col-user" />
+                  <div className="hp-table-col-profession" />
+                  <div className="hp-table-col-points" />
                 </div>
-                <div className="hp-table-row skeleton">
-                  <div />
-                  <div />
-                  <div />
-                  <div />
+                <div className="hp-table-row-new skeleton">
+                  <div className="hp-table-col-rank" />
+                  <div className="hp-table-col-user" />
+                  <div className="hp-table-col-profession" />
+                  <div className="hp-table-col-points" />
                 </div>
               </>
             )}
@@ -379,22 +369,33 @@ function HomePage() {
                   <Link
                     key={row.id}
                     to={`/u/${row.id}`}
-                    className="hp-table-row"
+                    className="hp-table-row-new"
                   >
-                    <div className="hp-table-rank">#{rank}</div>
-                    <div className="hp-table-user">
-                      {renderAvatar(row, 'xs')}
-                      <div>
-                        <div className="hp-table-name">{row.label}</div>
-                        <div className="hp-table-handle">{handle}</div>
+                    <div className="hp-table-col-rank">
+                      <span className="hp-table-rank-pill">#{rank}</span>
+                    </div>
+                    <div className="hp-table-col-user">
+                      <div className="hp-table-user-new">
+                        {renderAvatar(row, 'table')}
+                        <div className="hp-table-user-info-new">
+                          <span className="hp-table-name-new">{row.label}</span>
+                          <span className="hp-table-handle-new">{handle}</span>
+                          <div className="hp-table-profession-mobile-new">
+                            {row.profession || '—'}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="hp-table-profession">
-                      {row.profession || '—'}
+                    <div className="hp-table-col-profession">
+                      <span className="hp-table-profession-new">{row.profession || '—'}</span>
                     </div>
-                    <div className="hp-table-points">
-                      <DiamondIcon className="hp-diamond" />
-                      <span>{formatter.format(row.total || 0)}</span>
+                    <div className="hp-table-col-points">
+                      <div className="hp-table-points-badge">
+                        <span className="hp-table-points-icon">
+                          <DiamondIcon className="hp-diamond-badge" />
+                        </span>
+                        <span className="hp-table-points-value-new">{formatter.format(row.total || 0)}</span>
+                      </div>
                     </div>
                   </Link>
                 );
