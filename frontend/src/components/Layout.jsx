@@ -12,9 +12,9 @@ function Layout() {
         <div className="w-full max-w-[980px] mx-auto px-3 sm:px-4 md:px-6 h-full flex justify-between items-center gap-2 sm:gap-4">
           <Link to="/" className="flex items-center gap-1.5 sm:gap-2.5 text-inherit no-underline transition-transform duration-250 hover:translate-x-0.5 flex-shrink-0">
             <img
-              src="https://scontent-nrt1-1.xx.fbcdn.net/v/t39.30808-6/275130473_1299560400455995_8693570699170206627_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=va6tg0kTL04Q7kNvwEffGxP&_nc_oc=AdloglaDXdNDZ8RzWHcZ010T_1gFedw0UJsp0KvM6QgKdJSebG8ka6D2owRydZ5a-PNlDrUMDwmmjV8DBrxCm0eJ&_nc_zt=23&_nc_ht=scontent-nrt1-1.xx&_nc_gid=DRvdxGFvSSGFsvzhhOio6g&oh=00_Afim9YAIhWMa3ytpxEDqaMIfYV07-2tDBpz4gMCZ6Wl8ag&oe=69153B7F"
+              src="/nyyts.png"
               alt="Mazaalai logo"
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-amber-400 dark:border-amber-500 shadow-[0_0_18px_rgba(255,240,1,0.16)] transition-all duration-250 flex-shrink-0"
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-fill shadow-[0_0_18px_rgba(255,240,1,0.16)] transition-all duration-250 flex-shrink-0"
             />
             <div className="min-w-0">
               <div className="text-[9px] sm:text-[10px] md:text-[11px] tracking-wider uppercase text-amber-500 dark:text-amber-400 whitespace-nowrap">Secret Rangers</div>
