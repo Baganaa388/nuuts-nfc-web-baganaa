@@ -122,7 +122,7 @@ function AboutPage() {
           {/* Poem */}
           <section className="ranger-poem">
             <p className="ranger-poem-label">
-              Ranger шүлэг
+              Ranger-ийн тангараг
             </p>
             <p className="ranger-poem-text">
               Өглөө сэрээд мөрөөднө{"\n"}
