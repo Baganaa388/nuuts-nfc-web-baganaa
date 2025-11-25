@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS scans (
 
 CREATE TABLE IF NOT EXISTS totals (
   user_id INTEGER PRIMARY KEY,
-  total   REAL NOT NULL DEFAULT 0
+  total   REAL NOT NULL DEFAULT 0,
+  xp      REAL NOT NULL DEFAULT 0
 );
   `);
 
@@ -76,6 +77,21 @@ if (!cols.includes("industry")) {
   }
 }
 
+// Check and add XP column to totals table if it doesn't exist
+const totalsCols = db
+  .prepare("PRAGMA table_info('totals')")
+  .all()
+  .map((r) => r.name);
+if (!totalsCols.includes("xp")) {
+  try {
+    db.prepare("ALTER TABLE totals ADD COLUMN xp REAL NOT NULL DEFAULT 0").run();
+    // Calculate XP for existing users: 4% of their current total
+    db.prepare("UPDATE totals SET xp = total * 0.04 WHERE xp = 0 OR xp IS NULL").run();
+  } catch (e) {
+    console.warn("Could not add column xp to totals:", e.message);
+  }
+}
+
 function getUserByUID(uid) {
   return db
     .prepare(
@@ -93,7 +109,7 @@ function getUserFullById(id) {
 }
 
 function getTotalByUserId(id) {
-  return db.prepare("SELECT total FROM totals WHERE user_id = ?").get(id);
+  return db.prepare("SELECT total, xp FROM totals WHERE user_id = ?").get(id);
 }
 
 function getLeaderboardRows() {
@@ -105,10 +121,11 @@ function getLeaderboardRows() {
               COALESCE(NULLIF(u.nickname,''), u.name, 'Player ' || u.id) AS label,
               u.profession,
               u.industry,
-              COALESCE(t.total,0) AS total
+              COALESCE(t.total,0) AS total,
+              COALESCE(t.xp,0) AS xp
        FROM users u
        LEFT JOIN totals t ON t.user_id = u.id
-       ORDER BY total DESC, u.id ASC`
+       ORDER BY xp DESC, u.id ASC`
     )
     .all();
 }
@@ -139,14 +156,27 @@ function insertScan(uid) {
 
 function insertTransactionAndUpdateTotal(userId, amount) {
   const tx = db.transaction((uid, amt) => {
+    // Insert the transaction
     db.prepare("INSERT INTO transactions(user_id, amount) VALUES (?, ?)").run(
       uid,
       amt
     );
+    
+    // Update total (add the amount to existing total)
     db.prepare(
-      `INSERT INTO totals(user_id, total) VALUES (?, ?)
+      `INSERT INTO totals(user_id, total, xp) VALUES (?, ?, 0)
        ON CONFLICT(user_id) DO UPDATE SET total = total + excluded.total`
     ).run(uid, amt);
+    
+    // Get the new total and calculate XP (4% of total money)
+    const totalRow = db.prepare("SELECT total FROM totals WHERE user_id = ?").get(uid);
+    const newTotal = totalRow ? totalRow.total : amt;
+    const xp = newTotal * 0.04; // 4% of total money
+    
+    // Update XP in totals table
+    db.prepare(
+      `UPDATE totals SET xp = ? WHERE user_id = ?`
+    ).run(xp, uid);
   });
   tx(userId, amount);
 }

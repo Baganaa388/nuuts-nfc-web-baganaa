@@ -34,21 +34,22 @@ async function apiRequest(endpoint, options = {}) {
 export const api = {
   // Get leaderboard data with formatted rows
   // Returns rows with normalized total (number) and industry/profession fields
+  // XP (4% of total money) is displayed as points on the leaderboard
   getLeaderboard: async () => {
     const data = await apiRequest('/leaderboard');
     const rows = Array.isArray(data.rows) ? data.rows : [];
     return {
       ...data,
       rows: rows.map((row) => {
-        const { total, profession, industry, ...rest } = row;
+        const { total, xp, profession, industry, ...rest } = row;
+        // Use XP (4% of total money) as the displayed points on leaderboard
+        const points = typeof xp === "number" ? xp : Number.parseFloat(xp) || 0;
         return {
           ...rest,
           profession: profession || null,
           industry: industry || null,
-          total:
-            typeof total === "number"
-              ? total
-              : Number.parseFloat(total) || 0,
+          total: points, // Display XP as total/points on leaderboard
+          xp: points,
         };
       }),
     };
